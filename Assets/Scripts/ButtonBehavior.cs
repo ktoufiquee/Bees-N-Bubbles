@@ -19,5 +19,10 @@ public class ButtonBehavior : MonoBehaviour
     {
         Application.Quit();
     }
+
+    public void HowToPlay()
+    {
+        SceneManager.LoadScene("Instructions");
+    }
     
 }

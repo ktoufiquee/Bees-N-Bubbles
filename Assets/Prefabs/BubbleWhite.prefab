@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 3321606491449550490, guid: d819d55f3dc63434497dd854f4232712, type: 3}
-  collParticle: {fileID: 2549738711620878256, guid: bf698d683cb1ebc439959d1819cbfb93,
+  collParticle: {fileID: 3275772314418070966, guid: bf698d683cb1ebc439959d1819cbfb93,
     type: 3}
   speed: 0
   speedUpperLimit: 0.5

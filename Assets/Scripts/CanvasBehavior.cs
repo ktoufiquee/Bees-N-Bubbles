@@ -5,20 +5,21 @@ using System.Globalization;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 public class CanvasBehavior : MonoBehaviour
 {
-    public GameObject scoreObject;
-    public GameObject lifeObject;
-    public GameObject bigButtonObj;
-    public GameObject cooldownObj;
-    public GameObject deadScoreObj;
-    [SerializeField] private GameObject Player;
-    [SerializeField] private GameObject DeadUI;
-    [SerializeField] private GameObject AliveUI;
-    [SerializeField] private GameObject BigAvailable;
-    [SerializeField] private GameObject BigAlternative;
+    [SerializeField] private GameObject scoreObject;
+    [SerializeField] private GameObject lifeObject;
+    [SerializeField] private GameObject bigButtonObj;
+    [SerializeField] private GameObject cooldownObj;
+    [SerializeField] private GameObject deadScoreObj;
+    [SerializeField] private GameObject player;
+    [SerializeField] private GameObject deadUI;
+    [SerializeField] private GameObject aliveUI;
+    [SerializeField] private GameObject bigAvailable;
+    [SerializeField] private GameObject bigAlternative;
     private TextMeshProUGUI _scoreText;
     private TextMeshProUGUI _lifeText;
     private TextMeshProUGUI _lmbText;
@@ -26,25 +27,28 @@ public class CanvasBehavior : MonoBehaviour
     private TextMeshProUGUI _deadScore;
     private long _score;
     private float _life;
-    private bool _badIsGood;
     private float _cooldown;
-    [SerializeField] private float _maxCooldown;
-
+    private bool _badIsGood;
+    private bool _isPaused;
+    [SerializeField] private float maxCooldown;
+    [SerializeField] private CameraBehavior cameraBehavior;
     private const string ACITVATE_BIG = "Activate Bad is Good";
     private const string DEACTIVATE_BIG = "Deactivate Bad is Good";
+    
     private void Start()
     {
         _cooldown = 0f;
         _score = 0;
         _life = 50.0f;
         _badIsGood = true;
+        _isPaused = false;
         _deadScore = deadScoreObj.GetComponent<TextMeshProUGUI>();
         _scoreText = scoreObject.GetComponent<TextMeshProUGUI>();
         _lifeText = lifeObject.GetComponent<TextMeshProUGUI>();
         _lmbText = bigButtonObj.GetComponent<TextMeshProUGUI>();
         _cdText = cooldownObj.GetComponent<TextMeshProUGUI>();
         _scoreText.text = _score.ToString();
-        _lifeText.text = _life.ToString();
+        _lifeText.text = _life.ToString("F0");
     }
 
     private void Update()
@@ -53,7 +57,27 @@ public class CanvasBehavior : MonoBehaviour
         {
             _badIsGood = !_badIsGood;
             _lmbText.text = _badIsGood ? DEACTIVATE_BIG : ACITVATE_BIG;
-            _cooldown = _maxCooldown;
+            _cooldown = maxCooldown;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (_isPaused)
+            {
+                deadUI.SetActive(false);
+                aliveUI.SetActive(true);
+                player.SetActive(true);
+                Time.timeScale = 1;
+            }
+            else
+            {
+                deadUI.SetActive(true);
+                aliveUI.SetActive(false);
+                player.SetActive(false);
+                _deadScore.text = "PAUSED";
+                Time.timeScale = 0;
+            }
+            _isPaused = !_isPaused;
         }
 
         _cooldown -= Time.deltaTime;
@@ -61,13 +85,13 @@ public class CanvasBehavior : MonoBehaviour
 
         if (_cooldown <= 0)
         {
-            BigAvailable.SetActive(true);
-            BigAlternative.SetActive(false);
+            bigAvailable.SetActive(true);
+            bigAlternative.SetActive(false);
         }
         else
         {
-            BigAvailable.SetActive(false);
-            BigAlternative.SetActive(true);
+            bigAvailable.SetActive(false);
+            bigAlternative.SetActive(true);
             _cdText.text = "(" + _cooldown.ToString("F0") + "s)";
         }
 
@@ -79,9 +103,9 @@ public class CanvasBehavior : MonoBehaviour
 
         if (_life <= 0)
         {
-            Player.SetActive(false);
-            DeadUI.SetActive(true);
-            AliveUI.SetActive(false);
+            player.SetActive(false);
+            deadUI.SetActive(true);
+            aliveUI.SetActive(false);
             _deadScore.text = "Score: " + _score.ToString();
         }
     }
@@ -92,7 +116,8 @@ public class CanvasBehavior : MonoBehaviour
         {
             if (bubbleTag.Equals("White Bubble"))
             {
-                _life -= 10;
+                cameraBehavior.CameraShake();
+                _life -= 15;
                 _lifeText.text = Convert.ToInt32(math.clamp(_life, 0, 100)).ToString();
             }
             else
@@ -105,12 +130,13 @@ public class CanvasBehavior : MonoBehaviour
         {
             if (bubbleTag.Equals("White Bubble"))
             {
-                _life += 5;
-                _lifeText.text = Convert.ToInt32(math.clamp(_life, 0, 100)).ToString();
+                _life = math.clamp(_life + 5, 0, 100);
+                _lifeText.text = Convert.ToInt32(_life).ToString();
             }
             else
             {
-                _life -= 10;
+                cameraBehavior.CameraShake();
+                _life -= 15;
                 _lifeText.text = Convert.ToInt32(math.clamp(_life, 0, 100)).ToString();
             }
         }
